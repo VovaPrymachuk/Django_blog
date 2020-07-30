@@ -43,6 +43,9 @@
                 <button class="btn btn-danger" type="submit">Logout</button>
             </a>
         {% else %}
+            <a class="mx-2 my-2 my-sm-0" href="{% url 'register_page_url' %}">
+                <button class="btn btn-warning" type="submit">Registration</button>
+            </a>
             <a class="my-2 my-sm-0" href="{% url 'login_url' %}">
                 <button class="btn btn-info" type="submit">Login</button>
             </a>
