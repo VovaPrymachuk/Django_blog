@@ -13,6 +13,6 @@
            class="btn btn-light">Read</a>
     </div>
     <div class="card-footer text-muted">
-        <div class="text-right">{{ post.created|date:'SHORT_DATE_FORMAT' }}</div>
+            Author: {{ post.author }} - Published: {{ post.created|date:'SHORT_DATE_FORMAT' }}
     </div>
 </div>
