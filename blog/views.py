@@ -1,10 +1,11 @@
+from django.core.exceptions import ValidationError
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.views.generic import View
 
 from .models import Post, Tag
-from .forms import CreateUserForm
+from .forms import CreateUserForm, CreatePostForm, TagCreateForm
 from .utils import ObjectDetailMixin
 
 
@@ -52,6 +53,29 @@ def posts_lists(request):
     return render(request, 'blog/index.html', context)
 
 
+class PostCreate(View):
+
+    def get(self, request):
+        form = CreatePostForm()
+        tags = Tag.objects.all()
+        context = {'form': form, 'tags': tags}
+        return render(request, 'blog/create_post.html', context)
+
+    # def post(self, request):
+    #     form = CreatePostForm(request.POST)
+    #     tags = Tag.objects.all()
+    #     print(943)
+    #     if form.is_valid():
+    #         entry = form.save(commit=False)
+    #         entry.author = request.user
+    #         new_post = entry.save()
+    #         print(12131)
+    #         return redirect('posts_list_url')
+    #
+    #     context = {'form': form, 'tags': tags}
+    #     return render(request, 'blog/create_post.html', context)
+
+
 class PostDetail(ObjectDetailMixin, View):
     model = Post
     template = 'blog/post_detail.html'
@@ -66,3 +90,19 @@ def tags_list(request):
 class TagDetail(ObjectDetailMixin, View):
     model = Tag
     template = 'blog/tag_detail.html'
+
+
+class TagCreate(View):
+    def get(self, request):
+        form = TagCreateForm()
+        context = {'form': form}
+        return render(request, 'blog/tag_create.html', context)
+
+    def post(self, request):
+        form = TagCreateForm(request.POST)
+        if form.is_valid():
+            new_tag = form.save()
+            return redirect(new_tag)
+
+        context = {'form': form}
+        return render(request, 'blog/tag_create.html', context)
