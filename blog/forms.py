@@ -12,10 +12,28 @@ class CreateUserForm(UserCreationForm):
         fields = ['username', 'email', 'password1', 'password2']
 
 
-class CreatePostForm(forms.ModelForm):
+class PostCreateForm(forms.ModelForm):
     class Meta:
         model = Post
         fields = ['title', 'slug', 'body', 'tags']
+
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control',
+                                            'placeholder': 'Post title..'}),
+            'slug': forms.TextInput(attrs={'class': 'form-control',
+                                           'placeholder': 'Slug must be unique'}),
+            'body': forms.Textarea(attrs={'class': 'form-control',
+                                          'placeholder': 'Post body..'}),
+            'tags': forms.SelectMultiple(attrs={'class': 'form-control',
+                                                'label': 'Select tag'})
+        }
+
+    def clean_slug(self):
+        new_slug = self.cleaned_data['slug'].lower()
+
+        if new_slug == 'create':
+            raise ValidationError('Slug may not be "create".')
+        return new_slug
 
 
 class TagCreateForm(forms.ModelForm):
@@ -28,9 +46,11 @@ class TagCreateForm(forms.ModelForm):
             'slug': forms.TextInput()
         }
 
-        def save(self):
-            new_tag = Tag.objects.create(
-                title=self.cleaned_data['title'],
-                slug=self.cleaned_data['slug']
-            )
-            return new_tag
+    def clean_slug(self):
+        new_slug = self.cleaned_data['slug'].lower()
+
+        if new_slug == 'create':
+            raise ValidationError('Slug may not be "create".')
+        if Tag.objects.filter(slug__iexact=new_slug).count():
+            raise ValidationError('Slug must be unique.')
+        return new_slug

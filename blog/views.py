@@ -5,7 +5,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.views.generic import View
 
 from .models import Post, Tag
-from .forms import CreateUserForm, CreatePostForm, TagCreateForm
+from .forms import CreateUserForm, PostCreateForm, TagCreateForm
 from .utils import ObjectDetailMixin
 
 
@@ -54,26 +54,23 @@ def posts_lists(request):
 
 
 class PostCreate(View):
-
     def get(self, request):
-        form = CreatePostForm()
-        tags = Tag.objects.all()
-        context = {'form': form, 'tags': tags}
+        form = PostCreateForm()
+        context = {'form': form}
         return render(request, 'blog/create_post.html', context)
 
-    # def post(self, request):
-    #     form = CreatePostForm(request.POST)
-    #     tags = Tag.objects.all()
-    #     print(943)
-    #     if form.is_valid():
-    #         entry = form.save(commit=False)
-    #         entry.author = request.user
-    #         new_post = entry.save()
-    #         print(12131)
-    #         return redirect('posts_list_url')
-    #
-    #     context = {'form': form, 'tags': tags}
-    #     return render(request, 'blog/create_post.html', context)
+    def post(self, request):
+        bound_form = PostCreateForm(request.POST)
+        print(943)
+        if bound_form.is_valid():
+            entry = bound_form.save(commit=False)
+            entry.author = request.user
+            entry.save()
+            print(12131)
+            return redirect('posts_list_url')
+
+        context = {'form': bound_form}
+        return render(request, 'blog/create_post.html', context)
 
 
 class PostDetail(ObjectDetailMixin, View):
