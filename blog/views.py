@@ -6,7 +6,7 @@ from django.views.generic import View
 
 from .models import Post, Tag
 from .forms import CreateUserForm, PostCreateForm, TagCreateForm
-from .utils import ObjectDetailMixin
+from .utils import ObjectDetailMixin, ObjectUpdateMixin
 
 
 def register_page(request):
@@ -78,6 +78,12 @@ class PostDetail(ObjectDetailMixin, View):
     template = 'blog/post_detail.html'
 
 
+class PostUpdate(ObjectUpdateMixin, View):
+    model = Post
+    model_form = PostCreateForm
+    template = 'blog/post_update.html'
+
+
 def tags_list(request):
     tags = Tag.objects.all()
     context = {'tags': tags}
@@ -103,3 +109,10 @@ class TagCreate(View):
 
         context = {'form': form}
         return render(request, 'blog/tag_create.html', context)
+
+
+class TagUpdate(ObjectUpdateMixin, View):
+    model = Tag
+    model_form = TagCreateForm
+    template = 'blog/tag_update.html'
+

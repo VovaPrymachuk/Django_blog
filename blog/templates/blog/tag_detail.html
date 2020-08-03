@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block content %}
-    <h2 class="mb-5">Tags with "{{ tag.title|title }}" tag:</h2>
+    <h2 class="mb-5">Posts with "{{ tag.title|title }}" tag:</h2>
 
     {% for post in tag.posts.all %}
         {% include 'blog/includes/post_card.html' %}
