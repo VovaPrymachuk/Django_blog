@@ -1,11 +1,12 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
+from django.urls import reverse
 from django.views.generic import View
 
 from .models import Post, Tag
 from .forms import CreateUserForm, PostForm, TagForm
-from .utils import ObjectDetailMixin, ObjectUpdateMixin, ObjectListMixin
+from .utils import ObjectDetailMixin, ObjectUpdateMixin, ObjectListMixin, ObjectDeleteMixin
 
 
 def register_page(request):
@@ -82,6 +83,12 @@ class PostUpdate(ObjectUpdateMixin, View):
     template = 'blog/post_update.html'
 
 
+class PostDelete(ObjectDeleteMixin, View):
+    model = Post
+    get_template = 'blog/post_delete.html'
+    post_template = 'posts_list_url'
+
+
 class TagsList(ObjectListMixin, View):
     model = Tag
     template = 'blog/tags_list.html'
@@ -112,3 +119,9 @@ class TagUpdate(ObjectUpdateMixin, View):
     model = Tag
     model_form = TagForm
     template = 'blog/tag_update.html'
+
+
+class TagDelete(ObjectDeleteMixin, View):
+    model = Tag
+    get_template = 'blog/tag_delete.html'
+    post_template = 'tags_list_url'
