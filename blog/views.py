@@ -1,12 +1,11 @@
-from django.core.exceptions import ValidationError
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.views.generic import View
 
 from .models import Post, Tag
-from .forms import CreateUserForm, PostCreateForm, TagCreateForm
-from .utils import ObjectDetailMixin, ObjectUpdateMixin
+from .forms import CreateUserForm, PostForm, TagForm
+from .utils import ObjectDetailMixin, ObjectUpdateMixin, ObjectListMixin
 
 
 def register_page(request):
@@ -47,20 +46,19 @@ def logout_user(request):
     return redirect('login_url')
 
 
-def posts_lists(request):
-    posts = Post.objects.all()
-    context = {'posts': posts}
-    return render(request, 'blog/index.html', context)
+class PostsList(ObjectListMixin, View):
+    model = Post
+    template = 'blog/index.html'
 
 
 class PostCreate(View):
     def get(self, request):
-        form = PostCreateForm()
+        form = PostForm()
         context = {'form': form}
         return render(request, 'blog/create_post.html', context)
 
     def post(self, request):
-        bound_form = PostCreateForm(request.POST)
+        bound_form = PostForm(request.POST)
         print(943)
         if bound_form.is_valid():
             entry = bound_form.save(commit=False)
@@ -80,14 +78,13 @@ class PostDetail(ObjectDetailMixin, View):
 
 class PostUpdate(ObjectUpdateMixin, View):
     model = Post
-    model_form = PostCreateForm
+    model_form = PostForm
     template = 'blog/post_update.html'
 
 
-def tags_list(request):
-    tags = Tag.objects.all()
-    context = {'tags': tags}
-    return render(request, 'blog/tags_list.html', context)
+class TagsList(ObjectListMixin, View):
+    model = Tag
+    template = 'blog/tags_list.html'
 
 
 class TagDetail(ObjectDetailMixin, View):
@@ -97,12 +94,12 @@ class TagDetail(ObjectDetailMixin, View):
 
 class TagCreate(View):
     def get(self, request):
-        form = TagCreateForm()
+        form = TagForm()
         context = {'form': form}
         return render(request, 'blog/tag_create.html', context)
 
     def post(self, request):
-        form = TagCreateForm(request.POST)
+        form = TagForm(request.POST)
         if form.is_valid():
             new_tag = form.save()
             return redirect(new_tag)
@@ -113,6 +110,5 @@ class TagCreate(View):
 
 class TagUpdate(ObjectUpdateMixin, View):
     model = Tag
-    model_form = TagCreateForm
+    model_form = TagForm
     template = 'blog/tag_update.html'
-

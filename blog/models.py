@@ -1,14 +1,8 @@
-from time import time
-
 from django.db import models
 from django.shortcuts import reverse
 from django.contrib.auth import get_user_model
-from django.utils.text import slugify
 
-
-def generate_slug(s):
-    new_slug = slugify(s, allow_unicode=True)
-    return new_slug + '-' + str(int(time()))
+from .utils import generate_slug
 
 
 class Post(models.Model):

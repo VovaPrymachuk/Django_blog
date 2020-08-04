@@ -12,7 +12,7 @@ class CreateUserForm(UserCreationForm):
         fields = ['username', 'email', 'password1', 'password2']
 
 
-class PostCreateForm(forms.ModelForm):
+class PostForm(forms.ModelForm):
     class Meta:
         model = Post
         fields = ['title', 'slug', 'body', 'tags']
@@ -36,7 +36,7 @@ class PostCreateForm(forms.ModelForm):
         return new_slug
 
 
-class TagCreateForm(forms.ModelForm):
+class TagForm(forms.ModelForm):
     class Meta:
         model = Tag
         fields = ['title', 'slug']
