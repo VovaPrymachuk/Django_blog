@@ -21,6 +21,28 @@ class ObjectListMixin:
         return render(request, self.template, context)
 
 
+class ObjectCreateMixin:
+    form_model = None
+    template = None
+    redirect_url = None
+
+    def get(self, request):
+        form = self.form_model
+        context = {'form': form}
+        return render(request, self.template, context)
+
+    def post(self, request):
+        bound_form = self.form_model(request.POST)
+        if bound_form.is_valid():
+            entry = bound_form.save(commit=False)
+            entry.author = request.user
+            entry.save()
+            return redirect(self.redirect_url)
+
+        context = {'form': bound_form}
+        return render(request, self.template, context)
+
+
 class ObjectDetailMixin:
     model = None
     template = None

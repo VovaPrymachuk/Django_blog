@@ -7,7 +7,8 @@ from django.views.generic import View
 
 from .models import Post, Tag
 from .forms import CreateUserForm, PostForm, TagForm
-from .utils import ObjectDetailMixin, ObjectUpdateMixin, ObjectListMixin, ObjectDeleteMixin
+from .utils import ObjectDetailMixin, ObjectUpdateMixin, ObjectListMixin, \
+    ObjectDeleteMixin, ObjectCreateMixin
 
 
 def register_page(request):
@@ -60,22 +61,10 @@ class PostsList(ObjectListMixin, View):
     template = 'blog/index.html'
 
 
-class PostCreate(LoginRequiredMixin, View):
-    def get(self, request):
-        form = PostForm()
-        context = {'form': form}
-        return render(request, 'blog/create_post.html', context)
-
-    def post(self, request):
-        bound_form = PostForm(request.POST)
-        if bound_form.is_valid():
-            entry = bound_form.save(commit=False)
-            entry.author = request.user
-            entry.save()
-            return redirect('posts_list_url')
-
-        context = {'form': bound_form}
-        return render(request, 'blog/create_post.html', context)
+class PostCreate(LoginRequiredMixin, ObjectCreateMixin, View):
+    form_model = PostForm
+    template = 'blog/create_post.html'
+    redirect_url = 'posts_list_url'
 
 
 class PostDetail(ObjectDetailMixin, View):
@@ -105,22 +94,10 @@ class TagDetail(ObjectDetailMixin, View):
     template = 'blog/tag_detail.html'
 
 
-class TagCreate(LoginRequiredMixin, View):
-    def get(self, request):
-        form = TagForm()
-        context = {'form': form}
-        return render(request, 'blog/tag_create.html', context)
-
-    def post(self, request):
-        bound_form = TagForm(request.POST)
-        if bound_form.is_valid():
-            entry = bound_form.save(commit=False)
-            entry.author = request.user
-            entry.save()
-            return redirect(entry)
-
-        context = {'form': bound_form}
-        return render(request, 'blog/tag_create.html', context)
+class TagCreate(LoginRequiredMixin, ObjectCreateMixin, View):
+    form_model = TagForm
+    template = 'blog/tag_create.html'
+    redirect_url = 'tags_list_url'
 
 
 class TagUpdate(LoginRequiredMixin, ObjectUpdateMixin, View):
