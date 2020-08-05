@@ -17,7 +17,7 @@
         <a href="{{ tag.get_absolute_url }}" class="btn btn-outline-info btn-sm mr-1">{{ tag }}</a>
     {% endfor %}
 
-    {% if not username == post.author %}
+    {% if user.id == post.author_id %}
 
         <div class="text-center mt-3 mr-4">
             <a href="{{ post.get_update_url }}" class="btn btn-light">Edit</a>

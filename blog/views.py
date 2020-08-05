@@ -2,7 +2,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout, get_user_model
+from django.contrib.auth import authenticate, login, logout
 from django.views.generic import View
 
 from .models import Post, Tag
@@ -112,12 +112,14 @@ class TagCreate(LoginRequiredMixin, View):
         return render(request, 'blog/tag_create.html', context)
 
     def post(self, request):
-        form = TagForm(request.POST)
-        if form.is_valid():
-            new_tag = form.save()
-            return redirect(new_tag)
+        bound_form = TagForm(request.POST)
+        if bound_form.is_valid():
+            entry = bound_form.save(commit=False)
+            entry.author = request.user
+            entry.save()
+            return redirect(entry)
 
-        context = {'form': form}
+        context = {'form': bound_form}
         return render(request, 'blog/tag_create.html', context)
 
 

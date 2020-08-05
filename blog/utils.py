@@ -1,5 +1,6 @@
 from time import time
 
+from django.core.exceptions import ValidationError
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from django.utils.text import slugify
@@ -25,10 +26,8 @@ class ObjectDetailMixin:
     template = None
 
     def get(self, request, slug):
-        username = request.user.username
         obj = get_object_or_404(self.model, slug__iexact=slug)
         context = {
-            'username': username,
             self.model.__name__.lower(): obj,
             'admin_object': obj,
             'detail': True,
@@ -43,9 +42,15 @@ class ObjectUpdateMixin:
 
     def get(self, request, slug):
         obj = self.model.objects.get(slug__iexact=slug)
-        bound_form = self.model_form(instance=obj)
-        context = {'form': bound_form, self.model.__name__.lower(): obj}
-        return render(request, self.template, context)
+        if request.user.id == obj.author_id or request.user.is_staff \
+                or request.user.is_superuser:
+            bound_form = self.model_form(instance=obj)
+            context = {'form': bound_form, self.model.__name__.lower(): obj}
+            return render(request, self.template, context)
+        else:
+            raise ValidationError(
+                'Only creator can edit that %s' % self.model.__name__.lower()
+            )
 
     def post(self, request, slug):
         obj = self.model.objects.get(slug__iexact=slug)
@@ -65,8 +70,14 @@ class ObjectDeleteMixin:
 
     def get(self, request, slug):
         obj = self.model.objects.get(slug__iexact=slug)
-        context = {self.model.__name__.lower(): obj}
-        return render(request, self.get_template, context)
+        if request.user.id == obj.author_id or request.user.is_staff \
+                or request.user.is_superuser:
+            context = {self.model.__name__.lower(): obj}
+            return render(request, self.get_template, context)
+        else:
+            raise ValidationError(
+                'Only creator can delete that %s' % self.model.__name__.lower()
+            )
 
     def post(self, request, slug):
         tag = self.model.objects.get(slug__iexact=slug)
