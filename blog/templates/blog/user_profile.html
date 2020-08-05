@@ -1,0 +1,14 @@
+{% extends 'blog/base_blog.html' %}
+
+{% block title %}
+    {{ user.username|title }} profile
+{% endblock %}
+
+{% block content %}
+    <h2 class="mb-5">Posts created by user "{{ user.username }}":</h2>
+
+    {% for post in user.posts.all %}
+        {% include 'blog/includes/post_card.html' %}
+    {% endfor %}
+
+{% endblock %}

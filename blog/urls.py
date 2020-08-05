@@ -6,6 +6,7 @@ urlpatterns = [
     path('register/', register_page, name='register_page_url'),
     path('login/', login_page, name='login_url'),
     path('logout/', logout_user, name='logout_url'),
+    path('profile/<str:username>/', UserProfile.as_view(), name='user_profile'),
     path('post/create/', PostCreate.as_view(), name='post_create_url'),
     path('post/update/<str:slug>/', PostUpdate.as_view(), name='post_update_url'),
     path('post/<str:slug>/', PostDetail.as_view(), name='post_detail_url'),

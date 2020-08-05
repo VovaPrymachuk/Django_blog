@@ -1,7 +1,8 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
-from django.urls import reverse
+from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.views.generic import View
 
 from .models import Post, Tag
@@ -47,12 +48,19 @@ def logout_user(request):
     return redirect('login_url')
 
 
+class UserProfile(LoginRequiredMixin, View):
+    def get(self, request, username):
+        user = User.objects.get(username=username)
+        context = {'user': user}
+        return render(request, 'blog/user_profile.html', context)
+
+
 class PostsList(ObjectListMixin, View):
     model = Post
     template = 'blog/index.html'
 
 
-class PostCreate(View):
+class PostCreate(LoginRequiredMixin, View):
     def get(self, request):
         form = PostForm()
         context = {'form': form}
@@ -60,12 +68,10 @@ class PostCreate(View):
 
     def post(self, request):
         bound_form = PostForm(request.POST)
-        print(943)
         if bound_form.is_valid():
             entry = bound_form.save(commit=False)
             entry.author = request.user
             entry.save()
-            print(12131)
             return redirect('posts_list_url')
 
         context = {'form': bound_form}
@@ -77,13 +83,13 @@ class PostDetail(ObjectDetailMixin, View):
     template = 'blog/post_detail.html'
 
 
-class PostUpdate(ObjectUpdateMixin, View):
+class PostUpdate(LoginRequiredMixin, ObjectUpdateMixin, View):
     model = Post
     model_form = PostForm
     template = 'blog/post_update.html'
 
 
-class PostDelete(ObjectDeleteMixin, View):
+class PostDelete(LoginRequiredMixin, ObjectDeleteMixin, View):
     model = Post
     get_template = 'blog/post_delete.html'
     post_template = 'posts_list_url'
@@ -99,7 +105,7 @@ class TagDetail(ObjectDetailMixin, View):
     template = 'blog/tag_detail.html'
 
 
-class TagCreate(View):
+class TagCreate(LoginRequiredMixin, View):
     def get(self, request):
         form = TagForm()
         context = {'form': form}
@@ -115,13 +121,13 @@ class TagCreate(View):
         return render(request, 'blog/tag_create.html', context)
 
 
-class TagUpdate(ObjectUpdateMixin, View):
+class TagUpdate(LoginRequiredMixin, ObjectUpdateMixin, View):
     model = Tag
     model_form = TagForm
     template = 'blog/tag_update.html'
 
 
-class TagDelete(ObjectDeleteMixin, View):
+class TagDelete(LoginRequiredMixin, ObjectDeleteMixin, View):
     model = Tag
     get_template = 'blog/tag_delete.html'
     post_template = 'tags_list_url'
