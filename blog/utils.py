@@ -71,7 +71,7 @@ class ObjectUpdateMixin:
             return render(request, self.template, context)
         else:
             raise ValidationError(
-                'Only creator can edit that %s' % self.model.__name__.lower()
+                'Only creator can edit that %s.' % self.model.__name__.lower()
             )
 
     def post(self, request, slug):
@@ -98,7 +98,7 @@ class ObjectDeleteMixin:
             return render(request, self.get_template, context)
         else:
             raise ValidationError(
-                'Only creator can delete that %s' % self.model.__name__.lower()
+                'Only creator can delete that %s.' % self.model.__name__.lower()
             )
 
     def post(self, request, slug):

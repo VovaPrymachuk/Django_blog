@@ -30,7 +30,7 @@
             </li>
             {% if user.is_authenticated %}
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'user_profile' username=user.get_username %}">Profile</a>
+                    <a class="nav-link" href="{% url 'user_profile' username=user.username %}">My posts</a>
                 </li>
                 <li class="nav-item">
                     <div class="btn-group dropdown">
@@ -57,7 +57,7 @@
                 <button class="btn btn-danger" type="submit">Logout</button>
             </a>
         {% else %}
-            <a class="mx-2 my-sm-0" href="{% url 'register_page_url' %}">
+            <a class="mx-2 my-sm-0" href="{% url 'register_url' %}">
                 <button class="btn btn-warning" type="submit">Registration</button>
             </a>
             <a class="my-sm-0" href="{% url 'login_url' %}">
