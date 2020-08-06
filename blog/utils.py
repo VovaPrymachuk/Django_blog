@@ -11,16 +11,6 @@ def generate_slug(s):
     return new_slug + '-' + str(int(time()))
 
 
-class ObjectListMixin:
-    model = None
-    template = None
-
-    def get(self, request):
-        obj = self.model.objects.all()
-        context = {str(self.model.__name__.lower()) + 's': obj}
-        return render(request, self.template, context)
-
-
 class ObjectCreateMixin:
     form_model = None
     template = None

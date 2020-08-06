@@ -1,15 +1,28 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import View
+from django.db.models import Q
+from django.views.generic import View, ListView
 
 from .models import Post, Tag
 from .forms import PostForm, TagForm
-from .utils import ObjectDetailMixin, ObjectUpdateMixin, ObjectListMixin, \
-    ObjectDeleteMixin, ObjectCreateMixin
+from .utils import ObjectDetailMixin, ObjectUpdateMixin, ObjectDeleteMixin, \
+    ObjectCreateMixin
 
 
-class PostsList(ObjectListMixin, View):
-    model = Post
-    template = 'blog/index.html'
+class PostsList(ListView):
+    paginate_by = 5
+    context_object_name = 'posts'
+    template = 'blog/post_list.html'
+    queryset = Post.objects.all().order_by('-created')
+
+    def get_queryset(self):
+        query = self.request.GET.get('q')
+        queryset = Post.objects.all().order_by('-created')
+        if query:
+            posts = queryset.filter(title__icontains=query)
+        else:
+            posts = queryset
+        return posts
+
 
 
 class PostCreate(LoginRequiredMixin, ObjectCreateMixin, View):
@@ -35,9 +48,10 @@ class PostDelete(LoginRequiredMixin, ObjectDeleteMixin, View):
     post_template = 'posts_list_url'
 
 
-class TagsList(ObjectListMixin, View):
-    model = Tag
-    template = 'blog/tags_list.html'
+class TagsList(ListView):
+    queryset = Tag.objects.all()
+    template = 'blog/tag_list.html'
+    context_object_name = 'tags'
 
 
 class TagDetail(ObjectDetailMixin, View):

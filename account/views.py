@@ -1,5 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 from django.views.generic import View
 
@@ -54,4 +56,4 @@ class UserProfile(LoginRequiredMixin, View):
     def get(self, request, username):
         user = User.objects.get(username=username)
         context = {'user': user}
-        return render(request, 'blog/user_profile.html', context)
+        return render(request, 'account/user_profile.html', context)
