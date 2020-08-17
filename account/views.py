@@ -1,49 +1,101 @@
-from django.contrib import messages
+from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
-from django.shortcuts import render, redirect
+from django.core.exceptions import ValidationError
+from django.core.mail import EmailMessage
+from django.shortcuts import render, redirect, reverse
+from django.template.loader import get_template
+from django.utils.encoding import force_bytes, force_text
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.views.generic import View
 
-from account.forms import CreateUserForm
+from account.forms import RegistrationForm
+from account.utils import user_tokenizer
 
 
-class RegisterUser(View):
+class RegistrationView(View):
     def get(self, request):
-        if request.user.is_authenticated:
-            return redirect('posts_list_url')
-        else:
-            form = CreateUserForm()
-            context = {'form': form}
-            return render(request, 'account/register.html', context)
+        form = RegistrationForm()
+        context = {'form': form}
+        return render(request, 'accounts/register.html', context)
 
     def post(self, request):
-        form = CreateUserForm(request.POST)
+        form = RegistrationForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect('login_url')
+            user = form.save(commit=False)
+            user.is_valid = False
+            user.save()
+            token = user_tokenizer.make_token(user)
+            user_id = urlsafe_base64_encode(force_bytes(user.id))
+            url = 'http://localhost:8000' + reverse('confirm_email', kwargs={'user_id': user_id, 'token': token})
+            message = get_template('accounts/register_email.html').render({
+              'confirm_url': url
+            })
+            mail = EmailMessage('Django Blog app Email Confirmation', message,
+                                to=[user.email],
+                                from_email=settings.EMAIL_HOST_USER)
+            mail.content_subtype = 'html'
+            mail.send()
+
+            context = {
+                'form': AuthenticationForm,
+                'message': 'A confirmation email has been sent to {}.'
+                           'Please confirm to finish registering'.format(user.email)
+            }
+            return render(request, 'accounts/login.html', context)
 
         context = {'form': form}
-        return render(request, 'account/register.html', context)
+        return render(request, 'accounts/register.html', context)
 
 
-class LoginUser(View):
+class RegisterConfirmView(View):
+    def get(self, request, user_id, token):
+        user_id = force_text(urlsafe_base64_decode(user_id))
+
+        user = User.objects.get(pk=user_id)
+
+        context = {
+            'form': AuthenticationForm(),
+            'message': 'Registration confirmation error . '
+                       'Please click the reset password to generate '
+                       'a new confirmation email.'
+        }
+
+        if user and user_tokenizer.check_token(user, token):
+            user.is_valid = True
+            user.save()
+            context['message'] = 'Registration complete. Please login.'
+
+        return render(request, 'accounts/login.html', context)
+
+
+class LoginView(View):
     def get(self, request):
-        if request.user.is_authenticated:
-            return redirect('posts_list_url')
-        return render(request, 'account/login.html')
+        context = {'form': AuthenticationForm}
+        return render(request, 'accounts/login.html', context)
 
     def post(self, request):
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            return redirect('posts_list_url')
-        else:
-            messages.info(request, 'Username OR Password is not correct!')
+        form = AuthenticationForm(request.POST)
+        if form.is_valid():
+            username = request.POST.get('username')
+            password = request.POST.get('password')
+            user = authenticate(request, username=username, password=password)
 
-        return render(request, 'account/login.html')
+            if user is None:
+                context = {'form': form, 'invalid_creds': True}
+                return render(request, 'accounts/login.html', context)
+
+            try:
+                form.confirm_login_allowed(user)
+            except ValidationError:
+                context = {'form': form, 'invalid_creds': True}
+                return render(request, 'accounts/login.html', context)
+
+            login(request, user)
+
+        return redirect(reverse('posts_list_url'))
 
 
 class LogoutUser(View):
@@ -56,4 +108,4 @@ class UserProfile(LoginRequiredMixin, View):
     def get(self, request, username):
         user = User.objects.get(username=username)
         context = {'user': user}
-        return render(request, 'account/user_profile.html', context)
+        return render(request, 'accounts/user_profile.html', context)

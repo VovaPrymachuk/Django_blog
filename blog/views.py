@@ -1,5 +1,4 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Q
 from django.views.generic import View, ListView
 
 from .models import Post, Tag
