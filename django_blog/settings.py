@@ -27,7 +27,7 @@ load_dotenv(verbose=True, dotenv_path=os.path.join(BASE_DIR, '.env'))
 SECRET_KEY = 'rnmvexqz$#(3=c@va43e%!081j8r_ymaakh%%*%h(fl#z!-meo'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = []
 
@@ -84,8 +84,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'django_blog',
-        'USER': 'vladimir',
-        'PASSWORD': '280799',
+        'USER': 'username',
+        'PASSWORD': 'password',
     }
 }
 
